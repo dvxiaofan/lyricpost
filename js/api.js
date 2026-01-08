@@ -107,5 +107,82 @@ class LrcLibAPI {
     }
 }
 
+/**
+ * iTunes Search API 封装
+ * 用于获取专辑封面
+ */
+class ITunesAPI {
+    constructor() {
+        this.baseUrl = 'https://itunes.apple.com';
+    }
+
+    /**
+     * 搜索歌曲获取封面
+     * @param {string} trackName - 歌曲名
+     * @param {string} artistName - 歌手名
+     * @returns {Promise<string|null>} 封面 URL
+     */
+    async getCoverArt(trackName, artistName) {
+        try {
+            const query = `${trackName} ${artistName}`;
+            const url = `${this.baseUrl}/search?term=${encodeURIComponent(query)}&entity=song&limit=5`;
+
+            const response = await fetch(url);
+            if (!response.ok) return null;
+
+            const data = await response.json();
+
+            if (data.results && data.results.length > 0) {
+                // 尝试找到最匹配的结果
+                const match = this.findBestMatch(data.results, trackName, artistName);
+                if (match && match.artworkUrl100) {
+                    // 将 100x100 替换为 600x600 获取高清封面
+                    return match.artworkUrl100.replace('100x100', '600x600');
+                }
+            }
+
+            return null;
+        } catch (error) {
+            console.error('获取封面失败:', error);
+            return null;
+        }
+    }
+
+    /**
+     * 找到最匹配的结果
+     * @param {Array} results - 搜索结果
+     * @param {string} trackName - 歌曲名
+     * @param {string} artistName - 歌手名
+     * @returns {Object|null} 最匹配的结果
+     */
+    findBestMatch(results, trackName, artistName) {
+        const normalize = (str) => str.toLowerCase().trim();
+        const trackNorm = normalize(trackName);
+        const artistNorm = normalize(artistName);
+
+        // 优先找完全匹配
+        for (const result of results) {
+            const resultTrack = normalize(result.trackName || '');
+            const resultArtist = normalize(result.artistName || '');
+
+            if (resultTrack === trackNorm && resultArtist.includes(artistNorm)) {
+                return result;
+            }
+        }
+
+        // 其次找歌曲名匹配
+        for (const result of results) {
+            const resultTrack = normalize(result.trackName || '');
+            if (resultTrack === trackNorm || resultTrack.includes(trackNorm)) {
+                return result;
+            }
+        }
+
+        // 返回第一个结果
+        return results[0];
+    }
+}
+
 // 全局实例
 const lrcLibAPI = new LrcLibAPI();
+const itunesAPI = new ITunesAPI();

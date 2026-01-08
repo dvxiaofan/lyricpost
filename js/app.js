@@ -284,8 +284,9 @@ class LyricPostApp {
             this.cardLyrics.innerHTML = '点击此处输入歌词';
         }
 
-        // 生成默认封面
+        // 先设置默认占位封面，然后异步获取真实封面
         this.setDefaultCover();
+        this.fetchCoverArt();
 
         // 随机选择一个颜色
         const randomPreset = this.colorPresets[Math.floor(Math.random() * this.colorPresets.length)];
@@ -293,6 +294,26 @@ class LyricPostApp {
         this.updateColorPresetActive(randomPreset);
 
         this.goToStep(4);
+    }
+
+    /**
+     * 从 iTunes 获取专辑封面
+     */
+    async fetchCoverArt() {
+        const coverUrl = await itunesAPI.getCoverArt(
+            this.selectedSong.name,
+            this.selectedSong.artist
+        );
+
+        if (coverUrl) {
+            // 预加载图片，成功后再显示
+            const img = new Image();
+            img.crossOrigin = 'anonymous';
+            img.onload = () => {
+                this.coverImg.src = coverUrl;
+            };
+            img.src = coverUrl;
+        }
     }
 
     setDefaultCover() {
