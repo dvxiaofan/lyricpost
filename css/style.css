@@ -7,6 +7,16 @@
     padding: 0;
 }
 
+/* 图标字体加载前隐藏，避免显示文字 */
+.material-symbols-outlined {
+    opacity: 0;
+    transition: opacity 0.2s ease;
+}
+
+.fonts-loaded .material-symbols-outlined {
+    opacity: 1;
+}
+
 :root {
     --bg-color: #f5f5f5;
     --text-color: #1a1a1a;
