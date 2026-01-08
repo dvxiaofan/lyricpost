@@ -29,7 +29,7 @@
 
 ### 在线使用
 
-直接访问：[GitHub Pages 链接]
+直接访问：[https://dvxiaofan.github.io/lyricpost/](https://dvxiaofan.github.io/lyricpost/)
 
 ### 本地运行
 
