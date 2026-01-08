@@ -89,7 +89,12 @@
                 <div class="preview-container">
                     <div class="song-card" id="song-card">
                         <div class="card-header">
-                            <img src="" alt="封面" class="cover-img" id="cover-img">
+                            <div class="cover-wrapper" id="cover-wrapper">
+                                <img src="" alt="封面" class="cover-img" id="cover-img">
+                                <div class="cover-loading hidden" id="cover-loading">
+                                    <div class="spinner-small"></div>
+                                </div>
+                            </div>
                             <div class="song-info">
                                 <div class="song-name" contenteditable="true" id="song-name">歌曲名</div>
                                 <div class="artist-name" contenteditable="true" id="artist-name">歌手</div>
@@ -103,14 +108,18 @@
 
                 <!-- 自定义选项 -->
                 <div class="options">
-                    <!-- 封面上传 -->
+                    <!-- 封面操作 -->
                     <div class="option-group">
                         <label class="option-label">专辑封面</label>
-                        <div class="cover-upload">
+                        <div class="cover-actions">
                             <input type="file" id="cover-input" accept="image/*" hidden>
-                            <button class="btn secondary" id="upload-cover-btn">
+                            <button class="btn secondary small" id="fetch-cover-btn">
+                                <span class="material-symbols-outlined">image_search</span>
+                                自动获取
+                            </button>
+                            <button class="btn secondary small" id="upload-cover-btn">
                                 <span class="material-symbols-outlined">upload</span>
-                                上传封面
+                                本地上传
                             </button>
                         </div>
                     </div>
@@ -130,7 +139,7 @@
                         </div>
                     </div>
 
-                    <!-- 开关选项 -->
+                    <!-- 文字颜色 -->
                     <div class="option-group">
                         <label class="switch-label">
                             <span>浅色文字</span>

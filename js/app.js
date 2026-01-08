@@ -44,6 +44,8 @@ class LyricPostApp {
         // 自定义选项
         this.coverInput = document.getElementById('cover-input');
         this.uploadCoverBtn = document.getElementById('upload-cover-btn');
+        this.fetchCoverBtn = document.getElementById('fetch-cover-btn');
+        this.coverLoading = document.getElementById('cover-loading');
         this.colorPresets = document.querySelectorAll('.color-preset');
         this.customColor = document.getElementById('custom-color');
         this.lightTextSwitch = document.getElementById('light-text-switch');
@@ -87,6 +89,11 @@ class LyricPostApp {
 
         this.coverInput.addEventListener('change', (e) => {
             this.handleCoverUpload(e.target.files[0]);
+        });
+
+        // 自动获取封面
+        this.fetchCoverBtn.addEventListener('click', () => {
+            this.fetchCoverArt();
         });
 
         // 颜色选择
@@ -284,9 +291,8 @@ class LyricPostApp {
             this.cardLyrics.innerHTML = '点击此处输入歌词';
         }
 
-        // 先设置默认占位封面，然后异步获取真实封面
+        // 设置默认占位封面
         this.setDefaultCover();
-        this.fetchCoverArt();
 
         // 随机选择一个颜色
         const randomPreset = this.colorPresets[Math.floor(Math.random() * this.colorPresets.length)];
@@ -297,22 +303,40 @@ class LyricPostApp {
     }
 
     /**
-     * 从 iTunes 获取专辑封面
+     * 从 iTunes 获取专辑封面（手动触发）
      */
     async fetchCoverArt() {
-        const coverUrl = await itunesAPI.getCoverArt(
-            this.selectedSong.name,
-            this.selectedSong.artist
-        );
+        // 显示 loading
+        this.coverLoading.classList.remove('hidden');
+        this.fetchCoverBtn.disabled = true;
 
-        if (coverUrl) {
-            // 预加载图片，成功后再显示
-            const img = new Image();
-            img.crossOrigin = 'anonymous';
-            img.onload = () => {
-                this.coverImg.src = coverUrl;
-            };
-            img.src = coverUrl;
+        try {
+            const coverUrl = await itunesAPI.getCoverArt(
+                this.selectedSong.name,
+                this.selectedSong.artist
+            );
+
+            if (coverUrl) {
+                // 预加载图片
+                await new Promise((resolve, reject) => {
+                    const img = new Image();
+                    img.crossOrigin = 'anonymous';
+                    img.onload = () => {
+                        this.coverImg.src = coverUrl;
+                        resolve();
+                    };
+                    img.onerror = reject;
+                    img.src = coverUrl;
+                });
+            } else {
+                alert('未找到封面，请尝试手动上传');
+            }
+        } catch (error) {
+            console.error('获取封面失败:', error);
+            alert('获取封面失败，请尝试手动上传');
+        } finally {
+            this.coverLoading.classList.add('hidden');
+            this.fetchCoverBtn.disabled = false;
         }
     }
 
