@@ -7,6 +7,7 @@ class LyricPostApp {
         this.songs = [];
         this.selectedSong = null;
         this.selectedLyrics = new Set();
+        this.isSimplified = false; // 追踪当前是否为简体状态
 
         this.init();
     }
@@ -33,6 +34,7 @@ class LyricPostApp {
         // 歌词列表
         this.lyricsList = document.getElementById('lyrics-list');
         this.toPreviewBtn = document.getElementById('to-preview');
+        this.convertBtn = document.getElementById('convert-btn');
 
         // 预览页
         this.songCard = document.getElementById('song-card');
@@ -49,6 +51,9 @@ class LyricPostApp {
         this.colorPresets = document.querySelectorAll('.color-preset');
         this.customColor = document.getElementById('custom-color');
         this.lightTextSwitch = document.getElementById('light-text-switch');
+        this.alignBtns = document.querySelectorAll('.align-btn');
+        this.lineHeightSlider = document.getElementById('line-height-slider');
+        this.lineHeightValue = document.getElementById('line-height-value');
         this.downloadBtn = document.getElementById('download-btn');
 
         // 主题切换
@@ -82,6 +87,11 @@ class LyricPostApp {
             this.goToPreview();
         });
 
+        // 繁简转换
+        this.convertBtn.addEventListener('click', () => {
+            this.toggleLyricsConversion();
+        });
+
         // 上传封面
         this.uploadCoverBtn.addEventListener('click', () => {
             this.coverInput.click();
@@ -112,6 +122,19 @@ class LyricPostApp {
         // 浅色文字开关
         this.lightTextSwitch.addEventListener('click', () => {
             this.toggleLightText();
+        });
+
+        // 歌词对齐
+        this.alignBtns.forEach(btn => {
+            btn.addEventListener('click', () => {
+                this.setLyricsAlign(btn.dataset.align);
+                this.updateAlignBtnActive(btn);
+            });
+        });
+
+        // 行间距调节
+        this.lineHeightSlider.addEventListener('input', () => {
+            this.setLyricsLineHeight(this.lineHeightSlider.value);
         });
 
         // 下载
@@ -225,6 +248,11 @@ class LyricPostApp {
         this.selectedSong = this.songs[index];
         this.selectedLyrics.clear();
 
+        // 重置繁简转换状态
+        this.isSimplified = false;
+        this.convertBtn.classList.remove('active');
+        this.convertBtn.title = '繁体转简体';
+
         this.renderLyricsList();
         this.goToStep(3);
     }
@@ -270,6 +298,35 @@ class LyricPostApp {
         }
     }
 
+    /**
+     * 切换繁简体转换
+     */
+    toggleLyricsConversion() {
+        // 根据当前状态选择转换方向
+        const converter = this.isSimplified
+            ? OpenCC.Converter({ from: 'cn', to: 'tw' })  // 简转繁
+            : OpenCC.Converter({ from: 'tw', to: 'cn' }); // 繁转简
+
+        // 转换所有歌词行
+        const lyricLines = this.lyricsList.querySelectorAll('.lyric-line');
+        lyricLines.forEach(el => {
+            el.textContent = converter(el.textContent);
+        });
+
+        // 同时转换歌曲名和歌手名（存储的数据）
+        if (this.selectedSong) {
+            this.selectedSong.name = converter(this.selectedSong.name);
+            this.selectedSong.artist = converter(this.selectedSong.artist);
+        }
+
+        // 切换状态
+        this.isSimplified = !this.isSimplified;
+
+        // 更新按钮状态
+        this.convertBtn.classList.toggle('active', this.isSimplified);
+        this.convertBtn.title = this.isSimplified ? '点击转回繁体' : '繁体转简体';
+    }
+
     // ============================================
     // 预览页
     // ============================================
@@ -279,20 +336,38 @@ class LyricPostApp {
         this.songNameEl.textContent = this.selectedSong.name;
         this.artistNameEl.textContent = this.selectedSong.artist;
 
-        // 获取选中的歌词
+        // 获取选中的歌词，并处理不连续的情况
         const lyricLines = Array.from(this.lyricsList.querySelectorAll('.lyric-line'));
-        const selectedTexts = lyricLines
-            .filter((_, index) => this.selectedLyrics.has(index))
-            .map(el => el.textContent);
+        const selectedIndices = Array.from(this.selectedLyrics).sort((a, b) => a - b);
 
-        if (selectedTexts.length > 0) {
-            this.cardLyrics.innerHTML = selectedTexts.join('<br>');
+        const resultTexts = [];
+        for (let i = 0; i < selectedIndices.length; i++) {
+            const currentIndex = selectedIndices[i];
+            const prevIndex = selectedIndices[i - 1];
+
+            // 如果不是第一行，且与上一行不连续，插入省略号
+            if (i > 0 && currentIndex - prevIndex > 1) {
+                resultTexts.push('...');
+            }
+
+            resultTexts.push(lyricLines[currentIndex].textContent);
+        }
+
+        if (resultTexts.length > 0) {
+            this.cardLyrics.innerHTML = resultTexts.join('<br>');
         } else {
             this.cardLyrics.innerHTML = '点击此处输入歌词';
         }
 
         // 设置默认占位封面
         this.setDefaultCover();
+
+        // 设置默认对齐（居左）
+        this.cardLyrics.classList.add('align-left');
+
+        // 默认浅色文字（与卡片实际显示一致）
+        this.lightTextSwitch.classList.add('active');
+        this.songCard.classList.add('light-text');
 
         // 随机选择一个颜色
         const randomPreset = this.colorPresets[Math.floor(Math.random() * this.colorPresets.length)];
@@ -374,6 +449,21 @@ class LyricPostApp {
         const isLight = this.lightTextSwitch.classList.contains('active');
         this.songCard.classList.toggle('light-text', isLight);
         this.songCard.classList.toggle('dark-text', !isLight);
+    }
+
+    setLyricsAlign(align) {
+        this.cardLyrics.classList.remove('align-left', 'align-center', 'align-right');
+        this.cardLyrics.classList.add(`align-${align}`);
+    }
+
+    updateAlignBtnActive(activeBtn) {
+        this.alignBtns.forEach(btn => btn.classList.remove('active'));
+        activeBtn.classList.add('active');
+    }
+
+    setLyricsLineHeight(value) {
+        this.cardLyrics.style.lineHeight = value;
+        this.lineHeightValue.textContent = value;
     }
 
     // ============================================

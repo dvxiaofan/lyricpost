@@ -108,8 +108,123 @@ class LrcLibAPI {
 }
 
 /**
+ * Spotify Web API 封装
+ * 用于获取专辑封面（首选，支持 CORS）
+ */
+class SpotifyAPI {
+    constructor() {
+        this._accessToken = null;
+        this._tokenExpiry = 0;
+        // 使用开源项目的 key 进行测试
+        this._clientId = '4d6b7066ac2443cf82a29b79e9920e88';
+        this._clientSecret = 'cddfc0b1c87e4131ae0f3622bdc5b731';
+    }
+
+    /**
+     * 获取 Access Token
+     */
+    async getAccessToken() {
+        // 如果 token 还有效，直接返回
+        if (this._accessToken && Date.now() < this._tokenExpiry) {
+            return this._accessToken;
+        }
+
+        try {
+            const params = new URLSearchParams();
+            params.append('grant_type', 'client_credentials');
+            params.append('client_id', this._clientId);
+            params.append('client_secret', this._clientSecret);
+
+            const response = await fetch('https://accounts.spotify.com/api/token', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                body: params
+            });
+
+            if (!response.ok) {
+                throw new Error('获取 Spotify token 失败');
+            }
+
+            const data = await response.json();
+            this._accessToken = data.access_token;
+            // token 有效期通常是 3600 秒，提前 60 秒刷新
+            this._tokenExpiry = Date.now() + (data.expires_in - 60) * 1000;
+
+            return this._accessToken;
+        } catch (error) {
+            console.error('Spotify 认证失败:', error);
+            return null;
+        }
+    }
+
+    /**
+     * 搜索歌曲获取封面
+     * @param {string} trackName - 歌曲名
+     * @param {string} artistName - 歌手名
+     * @returns {Promise<string|null>} 封面 URL
+     */
+    async getCoverArt(trackName, artistName) {
+        try {
+            const token = await this.getAccessToken();
+            if (!token) return null;
+
+            const query = `${trackName} ${artistName}`;
+            const url = `https://api.spotify.com/v1/search?q=${encodeURIComponent(query)}&type=track&limit=5`;
+
+            const response = await fetch(url, {
+                method: 'GET',
+                headers: { 'Authorization': `Bearer ${token}` }
+            });
+
+            if (!response.ok) return null;
+
+            const data = await response.json();
+
+            if (data.tracks && data.tracks.items && data.tracks.items.length > 0) {
+                const match = this.findBestMatch(data.tracks.items, trackName, artistName);
+                if (match && match.album && match.album.images && match.album.images.length > 0) {
+                    // 返回最大尺寸的封面（第一张通常是 640x640）
+                    return match.album.images[0].url;
+                }
+            }
+
+            return null;
+        } catch (error) {
+            console.error('Spotify 获取封面失败:', error);
+            return null;
+        }
+    }
+
+    findBestMatch(tracks, trackName, artistName) {
+        const normalize = (str) => str.toLowerCase().trim();
+        const trackNorm = normalize(trackName);
+        const artistNorm = normalize(artistName);
+
+        // 优先找完全匹配
+        for (const track of tracks) {
+            const resultTrack = normalize(track.name || '');
+            const resultArtists = track.artists.map(a => normalize(a.name)).join(' ');
+
+            if (resultTrack === trackNorm && resultArtists.includes(artistNorm)) {
+                return track;
+            }
+        }
+
+        // 其次找歌曲名匹配
+        for (const track of tracks) {
+            const resultTrack = normalize(track.name || '');
+            if (resultTrack === trackNorm || resultTrack.includes(trackNorm)) {
+                return track;
+            }
+        }
+
+        return tracks[0];
+    }
+}
+
+/**
  * iTunes Search API 封装
- * 用于获取专辑封面（备选）
+ * 用于获取专辑封面（备选，不支持 CORS）
  */
 class ITunesAPI {
     constructor() {
@@ -272,25 +387,16 @@ class QQMusicAPI {
  */
 class CoverArtService {
     constructor() {
-        this.qqMusic = new QQMusicAPI();
-        this.itunes = new ITunesAPI();
+        this.spotify = new SpotifyAPI();
     }
 
     /**
-     * 获取封面（先试 QQ 音乐，失败再试 iTunes）
+     * 获取封面（使用 Spotify API）
      */
     async getCoverArt(trackName, artistName) {
-        // 先试 QQ 音乐
-        let cover = await this.qqMusic.getCoverArt(trackName, artistName);
+        const cover = await this.spotify.getCoverArt(trackName, artistName);
         if (cover) {
-            console.log('封面来源: QQ音乐');
-            return cover;
-        }
-
-        // 再试 iTunes
-        cover = await this.itunes.getCoverArt(trackName, artistName);
-        if (cover) {
-            console.log('封面来源: iTunes');
+            console.log('封面来源: Spotify');
             return cover;
         }
 

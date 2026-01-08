@@ -9,23 +9,44 @@
     <link rel="stylesheet" href="css/style.css">
     <script src="https://html2canvas.hertzen.com/dist/html2canvas.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/2.0.0/FileSaver.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/opencc-js@1.0.5/dist/umd/full.min.js"></script>
 </head>
 <body class="dark-mode">
     <main>
         <!-- 步骤 1: 搜索歌曲 -->
         <section class="screen active" data-step="1">
-            <div class="screen-content">
-                <header>
+            <div class="screen-content home-screen">
+                <div class="home-hero">
+                    <div class="hero-icon">
+                        <span class="material-symbols-outlined">music_note</span>
+                    </div>
                     <h1>歌词图片生成器</h1>
                     <p class="subtitle">搜索歌曲，选择歌词，生成精美图片</p>
-                </header>
+                </div>
                 <form id="search-form">
-                    <input type="text" id="search-input" class="input" placeholder="输入歌曲名或歌手名...">
+                    <div class="search-box">
+                        <span class="material-symbols-outlined search-icon">search</span>
+                        <input type="text" id="search-input" class="search-input" placeholder="输入歌曲名或歌手名...">
+                    </div>
                     <button type="submit" class="btn primary" id="search-btn">
                         <span class="material-symbols-outlined">search</span>
                         搜索歌曲
                     </button>
                 </form>
+                <div class="home-features">
+                    <div class="feature">
+                        <span class="material-symbols-outlined">library_music</span>
+                        <span>海量歌词</span>
+                    </div>
+                    <div class="feature">
+                        <span class="material-symbols-outlined">image</span>
+                        <span>精美卡片</span>
+                    </div>
+                    <div class="feature">
+                        <span class="material-symbols-outlined">download</span>
+                        <span>一键下载</span>
+                    </div>
+                </div>
                 <div class="loading hidden">
                     <div class="spinner"></div>
                     <span>搜索中...</span>
@@ -59,6 +80,9 @@
                         <span class="material-symbols-outlined">arrow_back</span>
                     </button>
                     <h2>选择歌词</h2>
+                    <button class="btn-icon" id="convert-btn" title="繁体转简体">
+                        <span class="material-symbols-outlined">translate</span>
+                    </button>
                     <button class="btn-icon next-btn" id="to-preview">
                         <span class="material-symbols-outlined">arrow_forward</span>
                     </button>
@@ -135,7 +159,10 @@
                             <div class="color-preset" style="background: #00BCD4" data-color="#00BCD4"></div>
                             <div class="color-preset" style="background: #FF9800" data-color="#FF9800"></div>
                             <div class="color-preset" style="background: #795548" data-color="#795548"></div>
-                            <input type="color" id="custom-color" class="color-input" value="#1DB954">
+                            <div class="color-custom" id="color-custom-btn" title="自定义颜色">
+                                <span class="material-symbols-outlined">palette</span>
+                                <input type="color" id="custom-color" value="#1DB954">
+                            </div>
                         </div>
                     </div>
 
@@ -147,6 +174,28 @@
                                 <div class="switch-thumb"></div>
                             </div>
                         </label>
+                    </div>
+
+                    <!-- 歌词对齐 -->
+                    <div class="option-group">
+                        <label class="option-label">歌词对齐</label>
+                        <div class="align-picker">
+                            <button class="align-btn active" data-align="left" title="居左">
+                                <span class="material-symbols-outlined">format_align_left</span>
+                            </button>
+                            <button class="align-btn" data-align="center" title="居中">
+                                <span class="material-symbols-outlined">format_align_center</span>
+                            </button>
+                            <button class="align-btn" data-align="right" title="居右">
+                                <span class="material-symbols-outlined">format_align_right</span>
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- 行间距 -->
+                    <div class="option-group">
+                        <label class="option-label">行间距 <span id="line-height-value">1.6</span></label>
+                        <input type="range" id="line-height-slider" class="slider" min="1" max="2.5" step="0.1" value="1.6">
                     </div>
                 </div>
 
