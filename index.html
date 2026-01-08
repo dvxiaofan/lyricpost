@@ -8,10 +8,15 @@
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,0,0&display=block">
     <link rel="stylesheet" href="css/style.css">
     <script>
-        // 检测图标字体加载完成
-        document.fonts.ready.then(() => {
-            document.body.classList.add('fonts-loaded');
-        });
+        // 检测 Material Symbols 字体是否真正加载完成
+        function checkFontsLoaded() {
+            if (document.fonts.check('24px "Material Symbols Outlined"')) {
+                document.body.classList.add('fonts-loaded');
+            } else {
+                requestAnimationFrame(checkFontsLoaded);
+            }
+        }
+        document.fonts.ready.then(checkFontsLoaded);
         // 备用：3秒后强制显示
         setTimeout(() => document.body.classList.add('fonts-loaded'), 3000);
     </script>
