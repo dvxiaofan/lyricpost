@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>歌词图片生成器</title>
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@300;400;500;600;700&display=swap">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,0,0">
+    <link rel="stylesheet" href="css/style.css">
+    <script src="https://html2canvas.hertzen.com/dist/html2canvas.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/2.0.0/FileSaver.min.js"></script>
+</head>
+<body class="dark-mode">
+    <main>
+        <!-- 步骤 1: 搜索歌曲 -->
+        <section class="screen active" data-step="1">
+            <div class="screen-content">
+                <header>
+                    <h1>歌词图片生成器</h1>
+                    <p class="subtitle">搜索歌曲，选择歌词，生成精美图片</p>
+                </header>
+                <form id="search-form">
+                    <input type="text" id="search-input" class="input" placeholder="输入歌曲名或歌手名...">
+                    <button type="submit" class="btn primary" id="search-btn">
+                        <span class="material-symbols-outlined">search</span>
+                        搜索歌曲
+                    </button>
+                </form>
+                <div class="loading hidden">
+                    <div class="spinner"></div>
+                    <span>搜索中...</span>
+                </div>
+                <div class="error hidden"></div>
+            </div>
+        </section>
+
+        <!-- 步骤 2: 选择歌曲 -->
+        <section class="screen" data-step="2">
+            <div class="screen-content">
+                <header>
+                    <button class="btn-icon back-btn" data-to="1">
+                        <span class="material-symbols-outlined">arrow_back</span>
+                    </button>
+                    <h2>选择歌曲</h2>
+                </header>
+                <div class="song-list" id="song-list"></div>
+                <div class="loading hidden">
+                    <div class="spinner"></div>
+                    <span>加载中...</span>
+                </div>
+            </div>
+        </section>
+
+        <!-- 步骤 3: 选择歌词 -->
+        <section class="screen" data-step="3">
+            <div class="screen-content">
+                <header>
+                    <button class="btn-icon back-btn" data-to="2">
+                        <span class="material-symbols-outlined">arrow_back</span>
+                    </button>
+                    <h2>选择歌词</h2>
+                    <button class="btn-icon next-btn" id="to-preview">
+                        <span class="material-symbols-outlined">arrow_forward</span>
+                    </button>
+                </header>
+                <p class="hint">点击选择要显示的歌词行</p>
+                <div class="lyrics-list" id="lyrics-list"></div>
+                <div class="loading hidden">
+                    <div class="spinner"></div>
+                    <span>加载歌词中...</span>
+                </div>
+            </div>
+        </section>
+
+        <!-- 步骤 4: 预览和自定义 -->
+        <section class="screen" data-step="4">
+            <div class="screen-content">
+                <header>
+                    <button class="btn-icon back-btn" data-to="3">
+                        <span class="material-symbols-outlined">arrow_back</span>
+                    </button>
+                    <h2>自定义图片</h2>
+                    <button class="btn-icon" id="download-btn">
+                        <span class="material-symbols-outlined">download</span>
+                    </button>
+                </header>
+
+                <!-- 图片预览 -->
+                <div class="preview-container">
+                    <div class="song-card" id="song-card">
+                        <div class="card-header">
+                            <img src="" alt="封面" class="cover-img" id="cover-img">
+                            <div class="song-info">
+                                <div class="song-name" contenteditable="true" id="song-name">歌曲名</div>
+                                <div class="artist-name" contenteditable="true" id="artist-name">歌手</div>
+                            </div>
+                        </div>
+                        <div class="card-lyrics" contenteditable="true" id="card-lyrics">
+                            选择的歌词将显示在这里
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 自定义选项 -->
+                <div class="options">
+                    <!-- 封面上传 -->
+                    <div class="option-group">
+                        <label class="option-label">专辑封面</label>
+                        <div class="cover-upload">
+                            <input type="file" id="cover-input" accept="image/*" hidden>
+                            <button class="btn secondary" id="upload-cover-btn">
+                                <span class="material-symbols-outlined">upload</span>
+                                上传封面
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- 颜色选择 -->
+                    <div class="option-group">
+                        <label class="option-label">背景颜色</label>
+                        <div class="color-picker">
+                            <div class="color-preset" style="background: #1DB954" data-color="#1DB954"></div>
+                            <div class="color-preset" style="background: #E91E63" data-color="#E91E63"></div>
+                            <div class="color-preset" style="background: #9C27B0" data-color="#9C27B0"></div>
+                            <div class="color-preset" style="background: #3F51B5" data-color="#3F51B5"></div>
+                            <div class="color-preset" style="background: #00BCD4" data-color="#00BCD4"></div>
+                            <div class="color-preset" style="background: #FF9800" data-color="#FF9800"></div>
+                            <div class="color-preset" style="background: #795548" data-color="#795548"></div>
+                            <input type="color" id="custom-color" class="color-input" value="#1DB954">
+                        </div>
+                    </div>
+
+                    <!-- 开关选项 -->
+                    <div class="option-group">
+                        <label class="switch-label">
+                            <span>浅色文字</span>
+                            <div class="switch" id="light-text-switch">
+                                <div class="switch-thumb"></div>
+                            </div>
+                        </label>
+                    </div>
+                </div>
+
+                <div class="loading hidden">
+                    <div class="spinner"></div>
+                    <span>生成图片中...</span>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <footer>
+        <div class="footer-content">
+            <span>歌词图片生成器</span>
+            <button class="btn-icon" id="theme-toggle">
+                <span class="material-symbols-outlined">dark_mode</span>
+            </button>
+        </div>
+    </footer>
+
+    <script src="js/api.js"></script>
+    <script src="js/imageGenerator.js"></script>
+    <script src="js/app.js"></script>
+</body>
+</html>
