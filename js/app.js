@@ -311,7 +311,7 @@ class LyricPostApp {
         this.fetchCoverBtn.disabled = true;
 
         try {
-            const coverUrl = await itunesAPI.getCoverArt(
+            const coverUrl = await coverArtService.getCoverArt(
                 this.selectedSong.name,
                 this.selectedSong.artist
             );

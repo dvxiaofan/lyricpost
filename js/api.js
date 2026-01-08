@@ -109,7 +109,7 @@ class LrcLibAPI {
 
 /**
  * iTunes Search API 封装
- * 用于获取专辑封面
+ * 用于获取专辑封面（备选）
  */
 class ITunesAPI {
     constructor() {
@@ -133,44 +133,32 @@ class ITunesAPI {
             const data = await response.json();
 
             if (data.results && data.results.length > 0) {
-                // 尝试找到最匹配的结果
                 const match = this.findBestMatch(data.results, trackName, artistName);
                 if (match && match.artworkUrl100) {
-                    // 将 100x100 替换为 600x600 获取高清封面
                     return match.artworkUrl100.replace('100x100', '600x600');
                 }
             }
 
             return null;
         } catch (error) {
-            console.error('获取封面失败:', error);
+            console.error('iTunes 获取封面失败:', error);
             return null;
         }
     }
 
-    /**
-     * 找到最匹配的结果
-     * @param {Array} results - 搜索结果
-     * @param {string} trackName - 歌曲名
-     * @param {string} artistName - 歌手名
-     * @returns {Object|null} 最匹配的结果
-     */
     findBestMatch(results, trackName, artistName) {
         const normalize = (str) => str.toLowerCase().trim();
         const trackNorm = normalize(trackName);
         const artistNorm = normalize(artistName);
 
-        // 优先找完全匹配
         for (const result of results) {
             const resultTrack = normalize(result.trackName || '');
             const resultArtist = normalize(result.artistName || '');
-
             if (resultTrack === trackNorm && resultArtist.includes(artistNorm)) {
                 return result;
             }
         }
 
-        // 其次找歌曲名匹配
         for (const result of results) {
             const resultTrack = normalize(result.trackName || '');
             if (resultTrack === trackNorm || resultTrack.includes(trackNorm)) {
@@ -178,11 +166,138 @@ class ITunesAPI {
             }
         }
 
-        // 返回第一个结果
         return results[0];
+    }
+}
+
+/**
+ * QQ 音乐 API 封装（通过 JSONP）
+ * 用于获取专辑封面（首选）
+ */
+class QQMusicAPI {
+    constructor() {
+        this.callbackIndex = 0;
+    }
+
+    /**
+     * JSONP 请求
+     */
+    jsonp(url, callbackName) {
+        return new Promise((resolve, reject) => {
+            const script = document.createElement('script');
+            const timeout = setTimeout(() => {
+                cleanup();
+                reject(new Error('请求超时'));
+            }, 5000);
+
+            const cleanup = () => {
+                clearTimeout(timeout);
+                delete window[callbackName];
+                script.remove();
+            };
+
+            window[callbackName] = (data) => {
+                cleanup();
+                resolve(data);
+            };
+
+            script.src = url;
+            script.onerror = () => {
+                cleanup();
+                reject(new Error('请求失败'));
+            };
+
+            document.head.appendChild(script);
+        });
+    }
+
+    /**
+     * 搜索歌曲获取封面
+     * @param {string} trackName - 歌曲名
+     * @param {string} artistName - 歌手名
+     * @returns {Promise<string|null>} 封面 URL
+     */
+    async getCoverArt(trackName, artistName) {
+        try {
+            const query = `${trackName} ${artistName}`;
+            const callback = `qqMusicCallback${++this.callbackIndex}`;
+            const url = `https://c.y.qq.com/soso/fcgi-bin/client_search_cp?p=1&n=5&w=${encodeURIComponent(query)}&format=jsonp&jsonpCallback=${callback}`;
+
+            const data = await this.jsonp(url, callback);
+
+            if (data.data && data.data.song && data.data.song.list && data.data.song.list.length > 0) {
+                const song = this.findBestMatch(data.data.song.list, trackName, artistName);
+                if (song && song.albummid) {
+                    // 返回 300x300 高清封面
+                    return `https://y.gtimg.cn/music/photo_new/T002R300x300M000${song.albummid}.jpg`;
+                }
+            }
+
+            return null;
+        } catch (error) {
+            console.error('QQ音乐获取封面失败:', error);
+            return null;
+        }
+    }
+
+    findBestMatch(songs, trackName, artistName) {
+        const normalize = (str) => str.toLowerCase().trim();
+        const trackNorm = normalize(trackName);
+        const artistNorm = normalize(artistName);
+
+        // 优先找完全匹配
+        for (const song of songs) {
+            const songName = normalize(song.songname || '');
+            const singerName = song.singer ? song.singer.map(s => normalize(s.name)).join(' ') : '';
+
+            if (songName === trackNorm && singerName.includes(artistNorm)) {
+                return song;
+            }
+        }
+
+        // 其次找歌曲名匹配
+        for (const song of songs) {
+            const songName = normalize(song.songname || '');
+            if (songName === trackNorm || songName.includes(trackNorm) || trackNorm.includes(songName)) {
+                return song;
+            }
+        }
+
+        return songs[0];
+    }
+}
+
+/**
+ * 封面获取服务（多源）
+ */
+class CoverArtService {
+    constructor() {
+        this.qqMusic = new QQMusicAPI();
+        this.itunes = new ITunesAPI();
+    }
+
+    /**
+     * 获取封面（先试 QQ 音乐，失败再试 iTunes）
+     */
+    async getCoverArt(trackName, artistName) {
+        // 先试 QQ 音乐
+        let cover = await this.qqMusic.getCoverArt(trackName, artistName);
+        if (cover) {
+            console.log('封面来源: QQ音乐');
+            return cover;
+        }
+
+        // 再试 iTunes
+        cover = await this.itunes.getCoverArt(trackName, artistName);
+        if (cover) {
+            console.log('封面来源: iTunes');
+            return cover;
+        }
+
+        return null;
     }
 }
 
 // 全局实例
 const lrcLibAPI = new LrcLibAPI();
-const itunesAPI = new ITunesAPI();
+const coverArtService = new CoverArtService();
