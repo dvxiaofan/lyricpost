@@ -9,12 +9,18 @@
 
 /* 图标字体加载前隐藏，避免显示文字 */
 .material-symbols-outlined {
-    opacity: 0;
-    transition: opacity 0.2s ease;
+    visibility: hidden;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 24px;
+    height: 24px;
+    overflow: hidden;
+    vertical-align: middle;
 }
 
 .fonts-loaded .material-symbols-outlined {
-    opacity: 1;
+    visibility: visible;
 }
 
 :root {
@@ -155,6 +161,8 @@ header h2 {
 
 .hero-icon .material-symbols-outlined {
     font-size: 40px;
+    width: 40px;
+    height: 40px;
     color: #fff;
 }
 
