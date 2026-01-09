@@ -507,9 +507,7 @@ class LyricPostApp {
     }
 
     updateThemeIcon() {
-        const isDark = document.body.classList.contains('dark-mode');
-        const icon = this.themeToggle.querySelector('.material-symbols-outlined');
-        icon.textContent = isDark ? 'light_mode' : 'dark_mode';
+        // 图标通过 CSS 控制显示/隐藏，无需 JS 操作
     }
 
     // ============================================

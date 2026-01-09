@@ -7,20 +7,26 @@
     padding: 0;
 }
 
-/* 图标字体加载前隐藏，避免显示文字 */
-.material-symbols-outlined {
-    visibility: hidden;
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
+/* SVG 图标基础样式 */
+.icon {
     width: 24px;
     height: 24px;
-    overflow: hidden;
+    flex-shrink: 0;
     vertical-align: middle;
 }
 
-.fonts-loaded .material-symbols-outlined {
-    visibility: visible;
+/* 主题切换图标：深色模式显示太阳，浅色模式显示月亮 */
+.dark-mode .icon-light-mode {
+    display: block;
+}
+.dark-mode .icon-dark-mode {
+    display: none;
+}
+body:not(.dark-mode) .icon-light-mode {
+    display: none;
+}
+body:not(.dark-mode) .icon-dark-mode {
+    display: block;
 }
 
 :root {
@@ -159,8 +165,7 @@ header h2 {
     animation: float 3s ease-in-out infinite;
 }
 
-.hero-icon .material-symbols-outlined {
-    font-size: 40px;
+.hero-icon .icon {
     width: 40px;
     height: 40px;
     color: #fff;
@@ -279,8 +284,9 @@ header h2 {
     min-height: 50px;
 }
 
-.feature .material-symbols-outlined {
-    font-size: 24px;
+.feature .icon {
+    width: 24px;
+    height: 24px;
     color: var(--primary-color);
 }
 
@@ -361,8 +367,9 @@ header h2 {
     gap: 4px;
 }
 
-.btn.small .material-symbols-outlined {
-    font-size: 18px;
+.btn.small .icon {
+    width: 18px;
+    height: 18px;
 }
 
 .btn-icon {
@@ -751,10 +758,11 @@ header h2 {
     transform: scale(1.1);
 }
 
-.color-custom .material-symbols-outlined {
-    font-size: 18px;
+.color-custom .icon {
+    width: 18px;
+    height: 18px;
     color: #fff;
-    text-shadow: 0 1px 2px rgba(0,0,0,0.5);
+    filter: drop-shadow(0 1px 2px rgba(0,0,0,0.5));
 }
 
 .color-custom input[type="color"] {

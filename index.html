@@ -5,21 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>歌词图片生成器</title>
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@300;400;500;600;700&display=swap">
-    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,0,0&display=block">
     <link rel="stylesheet" href="css/style.css">
-    <script>
-        // 检测 Material Symbols 字体是否真正加载完成
-        function checkFontsLoaded() {
-            if (document.fonts.check('24px "Material Symbols Outlined"')) {
-                document.body.classList.add('fonts-loaded');
-            } else {
-                requestAnimationFrame(checkFontsLoaded);
-            }
-        }
-        document.fonts.ready.then(checkFontsLoaded);
-        // 备用：3秒后强制显示
-        setTimeout(() => document.body.classList.add('fonts-loaded'), 3000);
-    </script>
     <script src="https://html2canvas.hertzen.com/dist/html2canvas.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/2.0.0/FileSaver.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/opencc-js@1.0.5/dist/umd/full.min.js"></script>
@@ -73,7 +59,7 @@
             <div class="screen-content">
                 <header>
                     <button class="btn-icon back-btn" data-to="1">
-                        <span class="material-symbols-outlined">arrow_back</span>
+                        <svg class="icon" viewBox="0 0 24 24" fill="currentColor"><path d="M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20v-2z"/></svg>
                     </button>
                     <h2>选择歌曲</h2>
                 </header>
@@ -90,14 +76,14 @@
             <div class="screen-content">
                 <header>
                     <button class="btn-icon back-btn" data-to="2">
-                        <span class="material-symbols-outlined">arrow_back</span>
+                        <svg class="icon" viewBox="0 0 24 24" fill="currentColor"><path d="M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20v-2z"/></svg>
                     </button>
                     <h2>选择歌词</h2>
                     <button class="btn-icon" id="convert-btn" title="繁体转简体">
-                        <span class="material-symbols-outlined">translate</span>
+                        <svg class="icon" viewBox="0 0 24 24" fill="currentColor"><path d="M12.87 15.07l-2.54-2.51.03-.03c1.74-1.94 2.98-4.17 3.71-6.53H17V4h-7V2H8v2H1v1.99h11.17C11.5 7.92 10.44 9.75 9 11.35 8.07 10.32 7.3 9.19 6.69 8h-2c.73 1.63 1.73 3.17 2.98 4.56l-5.09 5.02L4 19l5-5 3.11 3.11.76-2.04zM18.5 10h-2L12 22h2l1.12-3h4.75L21 22h2l-4.5-12zm-2.62 7l1.62-4.33L19.12 17h-3.24z"/></svg>
                     </button>
                     <button class="btn-icon next-btn" id="to-preview">
-                        <span class="material-symbols-outlined">arrow_forward</span>
+                        <svg class="icon" viewBox="0 0 24 24" fill="currentColor"><path d="M12 4l-1.41 1.41L16.17 11H4v2h12.17l-5.58 5.59L12 20l8-8z"/></svg>
                     </button>
                 </header>
                 <p class="hint">点击选择要显示的歌词行</p>
@@ -114,11 +100,11 @@
             <div class="screen-content">
                 <header>
                     <button class="btn-icon back-btn" data-to="3">
-                        <span class="material-symbols-outlined">arrow_back</span>
+                        <svg class="icon" viewBox="0 0 24 24" fill="currentColor"><path d="M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20v-2z"/></svg>
                     </button>
                     <h2>自定义图片</h2>
                     <button class="btn-icon" id="download-btn">
-                        <span class="material-symbols-outlined">download</span>
+                        <svg class="icon" viewBox="0 0 24 24" fill="currentColor"><path d="M5 20h14v-2H5v2zM19 9h-4V3H9v6H5l7 7 7-7z"/></svg>
                     </button>
                 </header>
 
@@ -151,11 +137,11 @@
                         <div class="cover-actions">
                             <input type="file" id="cover-input" accept="image/*" hidden>
                             <button class="btn secondary small" id="fetch-cover-btn">
-                                <span class="material-symbols-outlined">image_search</span>
+                                <svg class="icon" viewBox="0 0 24 24" fill="currentColor"><path d="M18 13v7H4V6h5.02c.05-.71.22-1.38.48-2H4c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2v-5l-2-2zm-1.5 5h-11l2.75-3.53 1.96 2.36 2.75-3.54zm2.8-9.11c.44-.7.7-1.51.7-2.39C20 4.01 17.99 2 15.5 2S11 4.01 11 6.5s2.01 4.5 4.5 4.5c.88 0 1.69-.26 2.39-.7L21 13.42 22.42 12l-3.12-3.11zM15.5 9C14.12 9 13 7.88 13 6.5S14.12 4 15.5 4 18 5.12 18 6.5 16.88 9 15.5 9z"/></svg>
                                 自动获取
                             </button>
                             <button class="btn secondary small" id="upload-cover-btn">
-                                <span class="material-symbols-outlined">upload</span>
+                                <svg class="icon" viewBox="0 0 24 24" fill="currentColor"><path d="M9 16h6v-6h4l-7-7-7 7h4zm-4 2h14v2H5z"/></svg>
                                 本地上传
                             </button>
                         </div>
@@ -173,7 +159,7 @@
                             <div class="color-preset" style="background: #FF9800" data-color="#FF9800"></div>
                             <div class="color-preset" style="background: #795548" data-color="#795548"></div>
                             <div class="color-custom" id="color-custom-btn" title="自定义颜色">
-                                <span class="material-symbols-outlined">palette</span>
+                                <svg class="icon" viewBox="0 0 24 24" fill="currentColor"><path d="M12 3c-4.97 0-9 4.03-9 9s4.03 9 9 9c.83 0 1.5-.67 1.5-1.5 0-.39-.15-.74-.39-1.01-.23-.26-.38-.61-.38-.99 0-.83.67-1.5 1.5-1.5H16c2.76 0 5-2.24 5-5 0-4.42-4.03-8-9-8zm-5.5 9c-.83 0-1.5-.67-1.5-1.5S5.67 9 6.5 9 8 9.67 8 10.5 7.33 12 6.5 12zm3-4C8.67 8 8 7.33 8 6.5S8.67 5 9.5 5s1.5.67 1.5 1.5S10.33 8 9.5 8zm5 0c-.83 0-1.5-.67-1.5-1.5S13.67 5 14.5 5s1.5.67 1.5 1.5S15.33 8 14.5 8zm3 4c-.83 0-1.5-.67-1.5-1.5S16.67 9 17.5 9s1.5.67 1.5 1.5-.67 1.5-1.5 1.5z"/></svg>
                                 <input type="color" id="custom-color" value="#1DB954">
                             </div>
                         </div>
@@ -194,13 +180,13 @@
                         <label class="option-label">歌词对齐</label>
                         <div class="align-picker">
                             <button class="align-btn active" data-align="left" title="居左">
-                                <span class="material-symbols-outlined">format_align_left</span>
+                                <svg class="icon" viewBox="0 0 24 24" fill="currentColor"><path d="M15 15H3v2h12v-2zm0-8H3v2h12V7zM3 13h18v-2H3v2zm0 8h18v-2H3v2zM3 3v2h18V3H3z"/></svg>
                             </button>
                             <button class="align-btn" data-align="center" title="居中">
-                                <span class="material-symbols-outlined">format_align_center</span>
+                                <svg class="icon" viewBox="0 0 24 24" fill="currentColor"><path d="M7 15v2h10v-2H7zm-4 6h18v-2H3v2zm0-8h18v-2H3v2zm4-6v2h10V7H7zM3 3v2h18V3H3z"/></svg>
                             </button>
                             <button class="align-btn" data-align="right" title="居右">
-                                <span class="material-symbols-outlined">format_align_right</span>
+                                <svg class="icon" viewBox="0 0 24 24" fill="currentColor"><path d="M3 21h18v-2H3v2zm6-4h12v-2H9v2zm-6-4h18v-2H3v2zm6-4h12V7H9v2zM3 3v2h18V3H3z"/></svg>
                             </button>
                         </div>
                     </div>
@@ -224,7 +210,8 @@
         <div class="footer-content">
             <span>歌词图片生成器</span>
             <button class="btn-icon" id="theme-toggle">
-                <span class="material-symbols-outlined">dark_mode</span>
+                <svg class="icon icon-light-mode" viewBox="0 0 24 24" fill="currentColor"><path d="M12 7c-2.76 0-5 2.24-5 5s2.24 5 5 5 5-2.24 5-5-2.24-5-5-5zM2 13h2c.55 0 1-.45 1-1s-.45-1-1-1H2c-.55 0-1 .45-1 1s.45 1 1 1zm18 0h2c.55 0 1-.45 1-1s-.45-1-1-1h-2c-.55 0-1 .45-1 1s.45 1 1 1zM11 2v2c0 .55.45 1 1 1s1-.45 1-1V2c0-.55-.45-1-1-1s-1 .45-1 1zm0 18v2c0 .55.45 1 1 1s1-.45 1-1v-2c0-.55-.45-1-1-1s-1 .45-1 1zM5.99 4.58c-.39-.39-1.03-.39-1.41 0-.39.39-.39 1.03 0 1.41l1.06 1.06c.39.39 1.03.39 1.41 0s.39-1.03 0-1.41L5.99 4.58zm12.37 12.37c-.39-.39-1.03-.39-1.41 0-.39.39-.39 1.03 0 1.41l1.06 1.06c.39.39 1.03.39 1.41 0 .39-.39.39-1.03 0-1.41l-1.06-1.06zm1.06-10.96c.39-.39.39-1.03 0-1.41-.39-.39-1.03-.39-1.41 0l-1.06 1.06c-.39.39-.39 1.03 0 1.41s1.03.39 1.41 0l1.06-1.06zM7.05 18.36c.39-.39.39-1.03 0-1.41-.39-.39-1.03-.39-1.41 0l-1.06 1.06c-.39.39-.39 1.03 0 1.41s1.03.39 1.41 0l1.06-1.06z"/></svg>
+                <svg class="icon icon-dark-mode" viewBox="0 0 24 24" fill="currentColor"><path d="M12 3c-4.97 0-9 4.03-9 9s4.03 9 9 9 9-4.03 9-9c0-.46-.04-.92-.1-1.36-.98 1.37-2.58 2.26-4.4 2.26-2.98 0-5.4-2.42-5.4-5.4 0-1.81.89-3.42 2.26-4.4-.44-.06-.9-.1-1.36-.1z"/></svg>
             </button>
         </div>
     </footer>
