@@ -8,6 +8,8 @@ class LyricPostApp {
         this.selectedSong = null;
         this.selectedLyrics = new Set();
         this.isSimplified = false; // 追踪当前是否为简体状态
+        this.openCCLoading = false; // OpenCC 加载状态锁
+        this.openCCLoadPromise = null; // 缓存加载 Promise
 
         this.init();
     }
@@ -299,9 +301,81 @@ class LyricPostApp {
     }
 
     /**
+     * 动态加载 OpenCC 库（带超时和防重复加载）
+     */
+    loadOpenCC() {
+        // 如果已经加载完成，直接返回
+        if (typeof OpenCC !== 'undefined') {
+            return Promise.resolve();
+        }
+
+        // 如果正在加载，返回缓存的 Promise
+        if (this.openCCLoadPromise) {
+            return this.openCCLoadPromise;
+        }
+
+        // 创建新的加载 Promise
+        this.openCCLoadPromise = new Promise((resolve, reject) => {
+            const script = document.createElement('script');
+            script.src = 'js/lib/opencc.full.min.js';
+
+            // 设置 10 秒超时
+            const timeout = setTimeout(() => {
+                script.remove();
+                reject(new Error('加载超时，请检查网络连接'));
+            }, 10000);
+
+            script.onload = () => {
+                clearTimeout(timeout);
+                resolve();
+            };
+
+            script.onerror = () => {
+                clearTimeout(timeout);
+                script.remove();
+                reject(new Error('加载失败，请检查网络连接'));
+            };
+
+            document.head.appendChild(script);
+        });
+
+        return this.openCCLoadPromise;
+    }
+
+    /**
      * 切换繁简体转换
      */
-    toggleLyricsConversion() {
+    async toggleLyricsConversion() {
+        // 首次使用时加载 OpenCC
+        if (typeof OpenCC === 'undefined') {
+            // 保存原始按钮内容
+            const originalHTML = this.convertBtn.innerHTML;
+            const originalTitle = this.convertBtn.title;
+
+            // 显示加载状态
+            this.convertBtn.disabled = true;
+            this.convertBtn.innerHTML = '<svg class="icon" viewBox="0 0 24 24" fill="currentColor"><path d="M12 4V1L8 5l4 4V6c3.31 0 6 2.69 6 6 0 1.01-.25 1.97-.7 2.8l1.46 1.46C19.54 15.03 20 13.57 20 12c0-4.42-3.58-8-8-8zm0 14c-3.31 0-6-2.69-6-6 0-1.01.25-1.97.7-2.8L5.24 7.74C4.46 8.97 4 10.43 4 12c0 4.42 3.58 8 8 8v3l4-4-4-4v3z"/></svg>';
+            this.convertBtn.title = '加载中...';
+
+            try {
+                await this.loadOpenCC();
+            } catch (error) {
+                // 恢复按钮状态
+                this.convertBtn.innerHTML = originalHTML;
+                this.convertBtn.title = originalTitle;
+                this.convertBtn.disabled = false;
+
+                // 显示错误提示
+                alert(`繁简转换功能加载失败\n\n${error.message}\n\n请刷新页面重试`);
+                return;
+            }
+
+            // 恢复按钮状态
+            this.convertBtn.innerHTML = originalHTML;
+            this.convertBtn.title = originalTitle;
+            this.convertBtn.disabled = false;
+        }
+
         // 根据当前状态选择转换方向
         const converter = this.isSimplified
             ? OpenCC.Converter({ from: 'cn', to: 'tw' })  // 简转繁
